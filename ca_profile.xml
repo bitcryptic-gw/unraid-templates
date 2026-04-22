@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Maintainer>
+  <Icon>https://raw.githubusercontent.com/bitcryptic-gw/unraid-templates/main/icon.png</Icon>
+  <Profile>Self-hosted AI infrastructure, crypto/DePIN, and Docker templates for Unraid. Building NanoClaw (AI agent platform), ckpool-solo (Bitcoin solo mining), and BitCryptic Compute (crypto-native AI inference). Based in Sydney, Australia.</Profile>
+  <WebPage>https://bitcryptic.com</WebPage>
+  <Twitter>https://twitter.com/BitCrypticGW</Twitter>
+</Maintainer>
