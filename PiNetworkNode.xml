@@ -1,0 +1,37 @@
+<Container version="2">
+<Name>Pi Network Node</Name>
+<Repository>bitcryptic/pi-network-node:latest</Repository>
+<Registry>
+https://hub.docker.com/r/bitcryptic/pi-network-node
+</Registry>
+<Beta>false</Beta>
+<Category>Crypto: Network:Other</Category>
+<Date>2026-04-17</Date>
+<Network>bridge</Network>
+<MyIP/>
+<Shell>sh</Shell>
+<Privileged>false</Privileged>
+<Support>
+https://forums.unraid.net/topic/197354-pi-network-node-docker-unraid-template-mainnet/
+</Support>
+<Project>
+https://github.com/bitcryptic-gw/unraid-pi-network-node
+</Project>
+<WebUI>http://[IP]:[PORT:31401]/</WebUI>
+<TemplateURL>https://raw.githubusercontent.com/bitcryptic-gw/unraid-templates/main/PiNetworkNode.xml</TemplateURL>
+<Icon>
+https://raw.githubusercontent.com/bitcryptic-gw/unraid-pi-network-node/main/icon.png
+</Icon>
+<Overview>
+Pi Network Node (Docker) template for Unraid — maintained by BitCryptic. This image wraps the official Pi Network node image with performance tuning applied out of the box, significantly reducing CPU and host load compared to running the upstream image directly. Upstream image: pinetwork/pi-node-docker:organization-mainnet-v1.0-p22.1 Source / changelog: https://github.com/bitcryptic-gw/unraid-pi-network-node Performance optimisations included: - INGEST_DISABLE_STATE_VERIFICATION=true — disables periodic full ledger state scans (main CPU reduction) - PARALLEL_JOB_SIZE=1 — reduces horizon ingestion worker parallelism - HISTORY_RETENTION_COUNT=1000000 — retains ~8 weeks of ledger history instead of all history since genesis Persistent data: - Map a host path to /opt/stellar (required). Ports (Pi standard): - 31401 -> 8000 (Horizon HTTP) - 31402 -> 31402 (stellar-core peer) - 31403 -> 1570 (Local history server / webfsd) Notes: - POSTGRES_PASSWORD is required. - NODE_PRIVATE_KEY is optional (advanced): leave blank for new nodes; set only if migrating an existing node identity. - --mainnet and --enable-auto-migrations are passed as Post Arguments.
+</Overview>
+<ExtraParams/>
+<PostArgs>--mainnet --enable-auto-migrations</PostArgs>
+<Config Name="/opt/stellar" Target="/opt/stellar" Default="/mnt/cache/appdata/pi-node-mainnet/stellar" Mode="rw" Description="Persistent node data (required)." Type="Path" Display="always" Required="true" Mask="false"/>
+<Config Name="/var/log/supervisor (optional)" Target="/var/log/supervisor" Default="/mnt/cache/appdata/pi-node-mainnet/supervisor_logs" Mode="rw" Description="Optional: persist supervisor logs." Type="Path" Display="advanced" Required="false" Mask="false"/>
+<Config Name="POSTGRES_PASSWORD" Target="POSTGRES_PASSWORD" Default="" Mode="" Description="Required. Database password for the node (keep secret)." Type="Variable" Display="always" Required="true" Mask="true"/>
+<Config Name="NODE_PRIVATE_KEY (optional)" Target="NODE_PRIVATE_KEY" Default="" Mode="" Description="Optional (advanced). Existing node private key for migrations. Leave blank for new nodes; key will be auto-generated." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+<Config Name="Horizon HTTP (host 31401)" Target="8000" Default="31401" Mode="tcp" Description="Horizon HTTP (Pi standard). Forward this on your router if required by Pi port checks." Type="Port" Display="always" Required="true" Mask="false"/>
+<Config Name="Stellar peer (host 31402)" Target="31402" Default="31402" Mode="tcp" Description="stellar-core peer port (Pi standard). Forward this on your router if required by Pi port checks." Type="Port" Display="always" Required="true" Mask="false"/>
+<Config Name="Local history server (host 31403)" Target="1570" Default="31403" Mode="tcp" Description="Local history server / webfsd (Pi standard). Forward this on your router if required by Pi port checks." Type="Port" Display="always" Required="true" Mask="false"/>
+</Container>

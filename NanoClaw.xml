@@ -1,0 +1,135 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>NanoClaw</Name>
+
+  <Repository>bitcryptic/nanoclaw:latest</Repository>
+  <Registry>https://hub.docker.com/r/bitcryptic/nanoclaw</Registry>
+  <Beta>false</Beta>
+  <Category>Tools: Other</Category>
+  <Date>2026-03-15</Date>
+
+  <Network>bridge</Network>
+  <MyIP></MyIP>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+
+  <Support>https://forums.unraid.net/topic/197773-support-nanoclaw-lightweight-secure-ai-agent-for-unraid/</Support>
+  <Project>https://github.com/qwibitai/nanoclaw</Project>
+
+  <TemplateURL>https://raw.githubusercontent.com/bitcryptic-gw/unraid-templates/main/NanoClaw.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/bitcryptic-gw/unraid-nanoclaw/main/icon.png</Icon>
+
+  <Overview>
+NanoClaw is a lightweight, secure personal AI agent that runs on your own server.
+It connects to Telegram and/or Matrix (E2EE) and runs every agent session
+inside an isolated Docker container — so the AI only sees what you explicitly give it access to.
+
+Built as a minimal alternative to OpenClaw/Clawdbot, NanoClaw has ~15 source files
+you can actually read and understand. No complex config files — customise by
+telling Claude Code what you want changed.
+
+Features:
+- Telegram and Matrix (E2EE) support
+- Per-group isolated agent containers
+- Scheduled tasks (morning briefings, weekly reviews, etc.)
+- Web search and fetch
+- Agent Swarms (teams of specialised agents)
+- Memory via per-group CLAUDE.md files
+
+Requirements:
+- Anthropic API key (console.anthropic.com)
+- Telegram bot token from @BotFather (for Telegram channel)
+- Matrix homeserver account, e.g. self-hosted Synapse (for Matrix channel)
+- Docker socket access (required for agent container isolation)
+
+Messaging Channels:
+At least one of Telegram or Matrix must be configured. Both can run simultaneously.
+
+Telegram: Set TELEGRAM_BOT_TOKEN from @BotFather. After starting the container,
+send /chatid to your bot and run the registration command — see the project README.
+
+Matrix (E2EE): Set MATRIX_HOMESERVER_URL, MATRIX_BOT_USER_ID, and MATRIX_ACCESS_TOKEN.
+MATRIX_BOT_PASSWORD is only needed once to bootstrap cross-signing keys and can
+be removed after first successful start.
+
+Optional Integrations:
+- Tailscale — join your tailnet for secure private access
+- Home Assistant — smart home control and automation
+- Vikunja — task and project management
+- Ollama / LiteLLM — local model inference
+- Paperclip — AI agent orchestration
+- UnraidClaw — manage your Unraid servers directly from chat
+
+Project: https://github.com/qwibitai/nanoclaw
+Unraid template: https://github.com/bitcryptic-gw/unraid-nanoclaw
+Support: https://forums.unraid.net/topic/197773-support-nanoclaw-lightweight-secure-ai-agent-for-unraid/
+</Overview>
+
+  <ExtraParams></ExtraParams>
+  <PostArgs></PostArgs>
+
+  <!-- Docker socket — required for agent container isolation -->
+  <Config Name="Docker Socket" Target="/var/run/docker.sock" Default="/var/run/docker.sock" Mode="rw" Description="Required. Gives NanoClaw access to the host Docker daemon so it can spin up isolated agent containers for each conversation." Type="Path" Display="always" Required="true" Mask="false"/>
+
+  <!-- Persistent data volumes -->
+  <Config Name="AppData" Target="/app/data" Default="/mnt/cache/appdata/nanoclaw/data" Mode="rw" Description="Persistent data: SQLite database, sessions, IPC, env copy." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Store" Target="/app/store" Default="/mnt/cache/appdata/nanoclaw/store" Mode="rw" Description="Persistent store: registered groups, messages, scheduled tasks." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Groups" Target="/app/groups" Default="/mnt/cache/appdata/nanoclaw/groups" Mode="rw" Description="Per-group CLAUDE.md memory files and agent runner source." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Logs" Target="/app/logs" Default="/mnt/cache/appdata/nanoclaw/logs" Mode="rw" Description="NanoClaw service logs." Type="Path" Display="always" Required="true" Mask="false"/>
+
+  <!-- Required environment variables -->
+  <Config Name="HOST_PROJECT_ROOT" Target="HOST_PROJECT_ROOT" Default="/mnt/cache/appdata/nanoclaw" Mode="" Description="Required. Host path to the NanoClaw appdata directory. Must match the host-side path of the AppData volume mount so agent containers can resolve volume paths correctly." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="TELEGRAM_BOT_TOKEN" Target="TELEGRAM_BOT_TOKEN" Default="" Mode="" Description="Optional. Telegram bot token from @BotFather. Only required if using Telegram as a messaging channel — Matrix is the recommended primary channel." Type="Variable" Display="always" Required="false" Mask="true"/>  <Config Name="Matrix Homeserver URL" Target="MATRIX_HOMESERVER_URL" Default="" Mode="" Description="URL of your Matrix homeserver, e.g. https://matrix.yourdomain.com. Required for Matrix channel support." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Matrix Bot User ID" Target="MATRIX_BOT_USER_ID" Default="" Mode="" Description="Full Matrix user ID for the bot account, e.g. @Andy:yourdomain.com. Required for Matrix channel support." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Matrix Access Token" Target="MATRIX_ACCESS_TOKEN" Default="" Mode="" Description="Matrix access token for the bot account. Obtain via the Matrix login API or your client. Required for Matrix channel support." Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="Matrix Bot Password" Target="MATRIX_BOT_PASSWORD" Default="" Mode="" Description="k2 Matrix account password — used once to bootstrap cross-signing keys. Can be removed after first successful bootstrap." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="ANTHROPIC_API_KEY" Target="ANTHROPIC_API_KEY" Default="" Mode="" Description="Anthropic API key from console.anthropic.com. Use this OR CLAUDE_CODE_OAUTH_TOKEN." Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="CLAUDE_CODE_OAUTH_TOKEN" Target="CLAUDE_CODE_OAUTH_TOKEN" Default="" Mode="" Description="Claude Pro/Max subscription OAuth token. Use this OR ANTHROPIC_API_KEY. Obtain by running 'claude setup-token' with Claude Code installed." Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="OneCLI URL" Target="ONECLI_URL" Default="" Mode="" Description="Optional. URL of your OneCLI gateway instance. OneCLI is the upstream default credential provider for agent containers. Leave blank if using the native credential proxy skill instead (self-hosted alternative)." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="OneCLI API Key" Target="ONECLI_API_KEY" Default="" Mode="" Description="Optional. API key for your OneCLI gateway. Required only if ONECLI_URL is set. Leave blank if using the native credential proxy skill." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="NANOCLAW_TRIGGER" Target="NANOCLAW_TRIGGER" Default="@Andy" Mode="" Description="Trigger word the assistant responds to. Default is @Andy. The assistant name is automatically derived from this — e.g. @Andy makes the assistant named Andy." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="NANOCLAW_REQUIRE_TRIGGER" Target="NANOCLAW_REQUIRE_TRIGGER" Default="true" Mode="" Description="Whether the assistant requires the trigger word to respond. Set to false to respond to all messages without needing the trigger." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Agent Model" Target="NANOCLAW_AGENT_MODEL" Default="haiku" Mode="" Description="Default model for agent containers. Per-group override via settings.json. Use model name with optional [1m] suffix for 1M context (Sonnet only). Examples: haiku, sonnet[1m], claude-opus-4-6" Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="Agent Effort" Target="NANOCLAW_AGENT_EFFORT" Default="medium" Mode="" Description="Default reasoning effort for agent containers. Per-group override via settings.json. Valid values: low, medium, high, max." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="NANOCLAW_EXTRA_MOUNTS" Target="NANOCLAW_EXTRA_MOUNTS" Default="" Mode="" Description="Additional volume mounts passed to agent containers. Format: hostpath:containerpath:ro,hostpath2:containerpath2:rw — e.g. /mnt/cache/logs:/central-logs:ro" Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="NANOCLAW_DOCKER_NETWORK" Target="NANOCLAW_DOCKER_NETWORK" Default="ai-local" Mode="" Description="Docker network for agent containers. Leave blank for default bridge. Set to a custom network name (e.g. ai-local) to isolate agent containers. The NanoClaw container itself must also be on this network." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="UNRAIDCLAW_SERVERS" Target="UNRAIDCLAW_SERVERS" Default="" Mode="" Description="UnraidClaw server config as JSON array. Example: [{&quot;name&quot;:&quot;unraid-syd&quot;,&quot;url&quot;:&quot;https://unraid-syd:9876&quot;,&quot;apiKey&quot;:&quot;YOUR_KEY&quot;}]. Supports multiple servers." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Tailscale API Client ID" Target="TS_API_CLIENT_ID" Default="" Mode="" Description="OAuth client ID from login.tailscale.com/admin/settings/oauth. Used by the assistant to query the Tailscale API for device discovery, monitoring and ACL auditing." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Tailscale API Client Secret" Target="TS_API_CLIENT_SECRET" Default="" Mode="" Description="OAuth client secret from login.tailscale.com/admin/settings/oauth. Keep this masked — treated as a credential." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="Tailscale Tailnet" Target="TS_API_TAILNET" Default="your-tailnet.ts.net" Mode="" Description="Your Tailscale tailnet name. Found in the Tailscale admin console." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Home Assistant URL" Target="HA_URL" Default="http://homeassistant:8123" Mode="" Description="URL of your Home Assistant instance. Use http://YOUR-UNRAID-IP:8123 if HA is on the same Unraid server." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Home Assistant Token" Target="HA_TOKEN" Default="" Mode="" Description="Long-lived access token from Home Assistant. Create at Profile → Long-Lived Access Tokens in HA." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="Vikunja URL" Target="VIKUNJA_URL" Default="http://vikunja:3456" Mode="" Description="URL of your Vikunja instance. Use http://vikunja:3456 if Vikunja is on the same Docker network as NanoClaw." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Vikunja API Token" Target="VIKUNJA_TOKEN" Default="" Mode="" Description="Vikunja API token. Create at Settings → API Tokens in the Vikunja UI. Needs Projects (read), Tasks (read/write/update/delete), Task comments (read/write), Task assignees (read/write/delete), and User (read) permissions." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="Tailscale State Directory" Target="/mnt/cache/appdata/nanoclaw/tailscale" Default="/mnt/cache/appdata/nanoclaw/tailscale" Mode="rw" Description="Persistent Tailscale state directory. Prevents new node identity being created on each restart." Type="Path" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Ollama URL" Target="OLLAMA_URL" Default="http://ollama:11434" Mode="" Description="URL of your Ollama instance. Use http://ollama:11434 if Ollama is on the same Docker network as NanoClaw." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="LiteLLM URL" Target="LITELLM_URL" Default="http://litellm:4000" Mode="" Description="Base URL for LiteLLM API. If set, enables the LiteLLM MCP skill for model discovery and Ollama sync." Type="Variable" Display="always" Required="false" Mask="false"/>
+  <Config Name="LiteLLM Master Key" Target="LITELLM_MASTER_KEY" Default="" Mode="" Description="Master key for LiteLLM model management API. Required for Ollama auto-sync into LiteLLM." Type="Variable" Display="always" Required="false" Mask="true"/>
+  <Config Name="Paperclip URL" Target="PAPERCLIP_URL" Default="http://paperclip:3100" Mode="" Description="URL of your Paperclip instance. Use http://paperclip:3100 if on the same Docker network." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Paperclip Agent JWT Secret" Target="PAPERCLIP_AGENT_JWT_SECRET" Default="" Mode="" Description="JWT secret from Paperclip for agent API auth. Found in Paperclip appdata at instances/default/.env" Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="Paperclip Agent ID" Target="PAPERCLIP_AGENT_ID" Default="" Mode="" Description="UUID of the NanoClaw agent in Paperclip. Found in Paperclip UI under Agents." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Paperclip Company ID" Target="PAPERCLIP_COMPANY_ID" Default="" Mode="" Description="UUID of your Paperclip company. Found in Paperclip UI under Company settings or the URL." Type="Variable" Display="advanced" Required="false" Mask="false"/>  <Config Name="Paperclip Webhook Secret" Target="PAPERCLIP_WEBHOOK_SECRET" Default="" Mode="" Description="Bearer token Paperclip uses to authenticate heartbeat calls to NanoClaw." Type="Variable" Display="advanced" Required="false" Mask="true"/>
+  <Config Name="Paperclip Group Folder" Target="PAPERCLIP_GROUP_FOLDER" Default="" Mode="" Description="NanoClaw group folder that receives Paperclip tasks, e.g. telegram_1234567890." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Paperclip Webhook Port" Target="PAPERCLIP_WEBHOOK_PORT" Default="3102" Mode="" Description="Port for the Paperclip webhook server. Default 3102." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <!-- Credential proxy port -->
+  <Config Name="Credential Proxy (host 3001)" Target="3001" Default="3001" Mode="tcp" Description="Internal credential proxy port used by agent containers to reach the Anthropic API. Only needs to be accessible on the local Docker bridge network. Change if port 3001 is already in use." Type="Port" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="Paperclip Webhook (port 3102)" Target="3102" Default="3102" Mode="tcp" Description="Paperclip webhook port for receiving heartbeats from Paperclip." Type="Port" Display="advanced" Required="false" Mask="false"/>
+
+  <!-- Some reasonable defaults for Tailscale-->
+  <TailscaleEnabled>false</TailscaleEnabled>
+  <TailscaleIsExitNode>false</TailscaleIsExitNode>
+  <TailscaleHostname>nanoclaw</TailscaleHostname>
+  <TailscaleExitNodeIP/>
+  <TailscaleSSH>false</TailscaleSSH>
+  <TailscaleUserspaceNetworking>true</TailscaleUserspaceNetworking>
+  <TailscaleLANAccess>false</TailscaleLANAccess>
+  <TailscaleServe>no</TailscaleServe>
+  <TailscaleWebUI/>
+  <TailscaleDParams/>
+  <TailscaleParams/>
+  <TailscaleRoutes/>
+  <TailscaleAcceptRoutes>false</TailscaleAcceptRoutes>
+  <TailscaleStateDir>/mnt/cache/appdata/nanoclaw/tailscale</TailscaleStateDir>
+
+</Container>
