@@ -22,3 +22,9 @@ Or drop any XML directly into `/boot/config/plugins/dockerMan/templates-user/` o
 
 - [BitCryptic](https://bitcryptic.com)
 - [Docker Hub](https://hub.docker.com/u/bitcryptic)
+
+---
+
+<a href="https://buymeacoffee.com/bitcryptic">
+  <img src="https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support%20my%20work-FFDD00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black">
+</a>
