@@ -14,7 +14,7 @@ Docker template XML files for Unraid Community Applications.
 
 Add this repository to Unraid Community Applications:
 
-`https://raw.githubusercontent.com/bitcryptic-gw/unraid-templates/main/NanoClaw.xml`
+`https://raw.github.com/bitcryptic-gw/unraid-templates`
 
 Or drop any XML directly into `/boot/config/plugins/dockerMan/templates-user/` on your Unraid server.
 
