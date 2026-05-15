@@ -7,7 +7,7 @@
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
-  <Support>https://github.com/bitcryptic-gw/paperclip</Support>
+  <Support>https://forums.unraid.net/topic/198763-support-paperclip-open-source-ai-coding-agent-platform-for-unraid/</Support>
   <Project>https://github.com/paperclipai/paperclip</Project>
   <ReadMe>https://github.com/paperclipai/paperclip/blob/master/README.md</ReadMe>
   <Overview>
