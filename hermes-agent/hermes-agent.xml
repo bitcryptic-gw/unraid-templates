@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>hermes-agent</Name>
+  <Repository>bitcryptic/hermes-agent:latest</Repository>
+  <Registry>https://hub.docker.com/r/bitcryptic/hermes-agent</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/bitcryptic-gw/hermes-agent/issues</Support>
+  <Project>https://github.com/NousResearch/hermes-agent</Project>
+  <Overview>
+Hermes Agent by Nous Research — self-hosted autonomous AI agent with persistent memory,
+multi-platform gateway (Matrix, Telegram, Discord, Slack, and more), MCP tool support,
+and self-improving skills. This image is the BitCryptic fork with Matrix E2EE fixes.
+
+BEFORE STARTING: Create /mnt/cache/appdata/hermes/.hermes.env with your API keys.
+See https://github.com/bitcryptic-gw/hermes-agent for required configuration.
+Credentials must NOT be entered as container variables — they live in the .hermes.env file.
+  </Overview>
+  <Category>Tools: Productivity:</Category>
+  <WebUI>http://[IP]:[PORT:8642]/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/bitcryptic-gw/unraid-templates/main/hermes-agent/hermes-agent.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/bitcryptic-gw/unraid-templates/main/hermes-agent/hermes-agent-icon.png</Icon>
+  <ExtraParams>--restart=unless-stopped --shm-size=1g</ExtraParams>
+  <PostArgs>gateway run</PostArgs>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+
+  <!-- Data volume — config, credentials, memory, crypto store -->
+  <Config Name="Data Path" Target="/opt/data" Default="/mnt/cache/appdata/hermes" Mode="rw" Description="Persistent storage for Hermes config, credentials, memory, and Matrix crypto store." Type="Path" Display="always" Required="true" Mask="false">/mnt/cache/appdata/hermes</Config>
+
+  <!-- Dashboard / API server port -->
+  <Config Name="WebUI Port" Target="8642" Default="8642" Mode="tcp" Description="Dashboard / API server port." Type="Port" Display="always" Required="true" Mask="false">8642</Config>
+
+  <!-- UID/GID for bind mount ownership -->
+  <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="User ID the container process runs as. Default 99 = nobody on Unraid." Type="Variable" Display="always" Required="true" Mask="false">99</Config>
+  <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="Group ID the container process runs as. Default 100 = users on Unraid." Type="Variable" Display="always" Required="true" Mask="false">100</Config>
+
+  <!-- HERMES_HOME is fixed to /opt/data — exposed for visibility only -->
+  <Config Name="HERMES_HOME" Target="HERMES_HOME" Default="/opt/data" Mode="" Description="Internal container path for Hermes data. Must match the container mount point. Do not change." Type="Variable" Display="advanced" Required="true" Mask="false">/opt/data</Config>
+
+  <!-- Optional: enable verbose logging -->
+  <Config Name="HERMES_LOG_LEVEL" Target="HERMES_LOG_LEVEL" Default="" Mode="" Description="Set to DEBUG for verbose logging (useful for Matrix E2EE troubleshooting). Leave blank for INFO." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+</Container>
