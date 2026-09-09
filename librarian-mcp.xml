@@ -96,6 +96,16 @@ Full docs: https://github.com/bitcryptic-gw/librarian-mcp
   <!-- Semantic search (litellm embedding route). Unset = semantic search stays off, query is FTS5-only. -->
   <Config Name="EMBEDDING_MODEL" Target="EMBEDDING_MODEL" Default="qwen3-embedding" Mode="" Description="litellm model_name of the embedding route used for semantic search (e.g. qwen3-embedding). The embeddings call goes to litellm's /embeddings endpoint - the same litellm base URL + API key the curator uses; litellm routes to the Ollama embedding model. Configure the route in litellm's config.yaml, not here. Unset disables semantic search entirely." Type="Variable" Display="always" Required="false" Mask="false"/>
 
+  <!-- Confirm allowlists (identity names only — not secrets; env vars are correct here).
+       Comma-separated agent ids, e.g. gary-claude,graham-hermes. Whitespace around entries is
+       tolerated and trimmed. Empty or unset = unrestricted confirm (still gated by delete's
+       cooldown / rollback's TTL + requester-identity binding). Valid identity strings match
+       [a-z0-9._-]. NOTE: an identity excluded from ROLLBACK_CONFIRM_AGENTS can write documents
+       but cannot repair them — rollback confirm is bound to the requesting identity, so the
+       allowlist is a second, coarser control over which identities may roll back at all. -->
+  <Config Name="Delete Confirm Agents" Target="DELETE_CONFIRM_AGENTS" Default="" Mode="" Description="Comma-separated allowlist of agent ids allowed to confirm deletes (two-step delete confirm step only). Empty/unset = any agent may confirm (still after the cooldown). Set to your interactive-only identities (e.g. gary-claude) to stop background agents closing the loop unattended. Whitespace around ids tolerated; ids match [a-z0-9._-]." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Rollback Confirm Agents" Target="ROLLBACK_CONFIRM_AGENTS" Default="" Mode="" Description="Comma-separated allowlist of agent ids allowed to confirm rollbacks (two-step rollback confirm step only; requests are unrestricted). Empty/unset = any agent may confirm (still gated by the token TTL and the requester-identity binding). NOTE: an identity that can write documents but is excluded here can damage a doc and then be unable to repair it via rollback — set deliberately. Whitespace around ids tolerated; ids match [a-z0-9._-]." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
   <!-- Server settings -->
   <Config Name="Server Port" Target="PORT" Default="8090" Mode="" Description="Port the MCP endpoint listens on inside the container. Exposed on the tailnet via Unraid's native Tailscale integration — never a published LAN port." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Bind Address" Target="BIND_ADDRESS" Default="0.0.0.0" Mode="" Description="Address the server binds. 0.0.0.0 is correct for Unraid's native Tailscale (userspace networking): the container netns is isolated and no host port is published, so the service is tailnet-only. Set a specific tailnet IP only if you disable userspace networking." Type="Variable" Display="advanced" Required="false" Mask="false"/>
