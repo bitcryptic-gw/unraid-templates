@@ -1,0 +1,123 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>librarian-mcp</Name>
+
+  <Repository>bitcryptic/librarian-mcp:latest</Repository>
+  <Registry>https://hub.docker.com/r/bitcryptic/librarian-mcp</Registry>
+  <Beta>false</Beta>
+  <Category>AI: MCP</Category>
+  <Date>2026-08-10</Date>
+
+  <Network>ai-net</Network>
+  <MyIP/>
+  <Shell>sh</Shell>
+  <Privileged>false</Privileged>
+
+  <Support>https://github.com/bitcryptic-gw/librarian-mcp</Support>
+  <Project>https://github.com/bitcryptic-gw/librarian-mcp</Project>
+
+  <TemplateURL>https://raw.githubusercontent.com/bitcryptic-gw/unraid-templates/main/librarian-mcp.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/bitcryptic-gw/unraid-templates/main/icon.png</Icon>
+
+  <Overview>
+Librarian MCP — a self-hosted MCP server that curates a shared, git-backed document store for AI agents.
+
+Other agents (Claude, CC, OC, Hermes, k2) query it for context and submit new information at the end of sessions, instead of touching files directly. The librarian owns all writes, maintains an FTS5 search index, and keeps a git log plus provenance cache (log.ndjson) of who submitted what and when.
+
+TOOLS:
+- query(criteria, scope?) — keyword search across granted scopes; returns ranked matches (no LLM call)
+- submit(content, scope, hint?) — a curator model (via litellm) decides create / update / merge / reject_duplicate, then the result is written and committed
+- get(doc_id) — full document content plus commit history
+
+TAILNET IDENTITY — Unraid NATIVE integration (no image changes needed):
+This image is Tailscale-unaware. Unraid's built-in per-container Tailscale (Unraid 7+) gives the container its own tailnet presence via the container's Tailscale settings in the Docker UI:
+- Use Tailscale toggle: ENABLED (pre-set by this template)
+- Tailscale hostname: librarian-mcp  (node appears as librarian-mcp.pygmy-bramble.ts.net)
+- Tailscale tag: tag:librarian-mcp (ACL grant live: tag:librarian-mcp → tcp:8090)
+- Tailscale State Directory: /mnt/user/appdata/tailscale/librarian-mcp
+
+FIRST DEPLOY / REGISTRATION (pre-tagged auth key, no log-link):
+Gary generates a pre-tagged, reusable auth key in the Tailscale admin console
+(scoped to tag:librarian-mcp), saves it to 1Password, and pastes it into the
+Tailscale Extra Parameters field in place of the REPLACE_WITH_TAILSCALE_AUTH_KEY
+placeholder (the field is pre-filled with the full flags below). Then start the
+container — no interactive registration is needed. Confirm in the admin console
+that the node appears with tag:librarian-mcp.
+
+⚠ AUTH KEY VISIBILITY: the Tailscale Extra Parameters field is a plain text
+field (not password-masked) and the value is stored in the template/container
+config, so the pasted key is visible in the Unraid UI and via docker inspect.
+This matches the earlier env-var-visibility caveat. If strict no-inspect
+compliance is required, say so and we'll switch to a file-mounted key instead.
+
+BINDING: the app listens on 0.0.0.0 inside its isolated container netns (BIND_ADDRESS=0.0.0.0). No host port is published, so the service is reachable only via its Tailscale identity — tailnet-only.
+
+SECURITY:
+- Agent bearer tokens are loaded from a file mount only (Agent Token File), never env/CLI.
+- Timing-safe token comparison; scope enforcement (a caller cannot write outside its granted scopes).
+- Request body size limits on submit; input validation on all tool parameters.
+- Refuses to start if required secrets are missing.
+
+BEFORE FIRST START:
+1. Create the data directory: /mnt/user/appdata/librarian
+2. Create the agent token file (one identity per agent so provenance records who wrote what; all share the single `shared` pool):
+   printf '%s' '{"agents":{"gary-cc":{"token":"REPLACE_WITH_LONG_RANDOM_TOKEN","scopes":["shared"]},"gary-claude":{"token":"REPLACE_WITH_LONG_RANDOM_TOKEN","scopes":["shared"]},"gary-oc":{"token":"REPLACE_WITH_LONG_RANDOM_TOKEN","scopes":["shared"]},"gary-k4":{"token":"REPLACE_WITH_LONG_RANDOM_TOKEN","scopes":["shared"]},"graham-hermes":{"token":"REPLACE_WITH_LONG_RANDOM_TOKEN","scopes":["shared"]},"graham-neo":{"token":"REPLACE_WITH_LONG_RANDOM_TOKEN","scopes":["shared"]}}}' &gt; /mnt/user/appdata/librarian/tokens.json
+   chown 99:100 /mnt/user/appdata/librarian/tokens.json &amp;&amp; chmod 600 /mnt/user/appdata/librarian/tokens.json
+3. Create the litellm API key file (a scoped litellm virtual key, e.g. gary-agents):
+   printf '%s' 'sk-your-litellm-virtual-key' &gt; /mnt/user/appdata/librarian/litellm_key
+   chown 99:100 /mnt/user/appdata/librarian/litellm_key &amp;&amp; chmod 600 /mnt/user/appdata/librarian/litellm_key
+
+AGENT CONNECTION: point your agent's MCP client at:
+  http://librarian-mcp.pygmy-bramble.ts.net:8090/mcp
+with header: Authorization: Bearer &lt;agent-token&gt;
+
+Full docs: https://github.com/bitcryptic-gw/librarian-mcp
+  </Overview>
+
+  <ExtraParams/>
+  <PostArgs/>
+
+  <!-- Data volume: git repo + index + provenance log -->
+  <Config Name="Data Path" Target="/data" Default="/mnt/user/appdata/librarian" Mode="rw" Description="Data directory containing the git repo (repo/), the FTS5 search index (index.sqlite) and the provenance cache (log.ndjson)." Type="Path" Display="always" Required="true" Mask="false"/>
+
+  <!-- Secret file mounts -->
+  <Config Name="Agent Token File" Target="/run/secrets/agent_tokens" Default="/mnt/user/appdata/librarian/tokens.json" Mode="ro" Description="Host path to the JSON file mapping agent tokens to identities and scopes. Read-only inside the container." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Litellm API Key File" Target="/run/secrets/litellm_key" Default="/mnt/user/appdata/librarian/litellm_key" Mode="ro" Description="Host path to a file containing the litellm virtual key (e.g. gary-agents). Sent as a Bearer token to litellm. Keeps the secret out of docker inspect." Type="Path" Display="always" Required="true" Mask="false"/>
+  <Config Name="Repo Path" Target="REPO_PATH" Default="/data/repo" Mode="" Description="Path (inside the container) to the git working tree that holds docs/. Must sit under the Data Path mount." Type="Variable" Display="advanced" Required="true" Mask="false"/>
+  <Config Name="Litellm API Key File Path" Target="LITELLM_API_KEY_FILE" Default="/run/secrets/litellm_key" Mode="" Description="Container path to the mounted litellm key file (matches the Litellm API Key File mount). Read at boot; the value itself is never an env var." Type="Variable" Display="advanced" Required="true" Mask="false"/>
+
+  <!-- Persistent Tailscale state (host path = container path, identical) -->
+  <Config Name="Tailscale State" Target="/mnt/user/appdata/tailscale/librarian-mcp" Default="/mnt/user/appdata/tailscale/librarian-mcp" Mode="rw" Description="Persistent Tailscale state directory. Host and container paths must be identical so the container resumes its tailnet identity (same node) across restarts/recreates instead of registering a duplicate." Type="Path" Display="always" Required="true" Mask="false"/>
+
+  <!-- litellm endpoint -->
+  <Config Name="LITELLM_BASE_URL" Target="LITELLM_BASE_URL" Default="http://litellm:4000" Mode="" Description="Full URL to your litellm proxy (OpenAI-compatible). Default assumes the litellm container on the same ai-net bridge network." Type="Variable" Display="always" Required="true" Mask="false"/>
+  <Config Name="LITELLM_MODEL" Target="LITELLM_MODEL" Default="deepseek-flash" Mode="" Description="litellm model_name to route to. deepseek-flash = DeepSeek V4 Flash via the litellm proxy." Type="Variable" Display="always" Required="true" Mask="false"/>
+
+  <!-- Semantic search (litellm embedding route). Unset = semantic search stays off, query is FTS5-only. -->
+  <Config Name="EMBEDDING_MODEL" Target="EMBEDDING_MODEL" Default="qwen3-embedding" Mode="" Description="litellm model_name of the embedding route used for semantic search (e.g. qwen3-embedding). The embeddings call goes to litellm's /embeddings endpoint - the same litellm base URL + API key the curator uses; litellm routes to the Ollama embedding model. Configure the route in litellm's config.yaml, not here. Unset disables semantic search entirely." Type="Variable" Display="always" Required="false" Mask="false"/>
+
+  <!-- Server settings -->
+  <Config Name="Server Port" Target="PORT" Default="8090" Mode="" Description="Port the MCP endpoint listens on inside the container. Exposed on the tailnet via Unraid's native Tailscale integration — never a published LAN port." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="Bind Address" Target="BIND_ADDRESS" Default="0.0.0.0" Mode="" Description="Address the server binds. 0.0.0.0 is correct for Unraid's native Tailscale (userspace networking): the container netns is isolated and no host port is published, so the service is tailnet-only. Set a specific tailnet IP only if you disable userspace networking." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+
+  <!-- UID/GID for bind-mount ownership -->
+  <Config Name="PUID" Target="PUID" Default="99" Mode="" Description="User ID the container process runs as. Default 99 = nobody on Unraid. The Data Path is chowned to this UID at start." Type="Variable" Display="advanced" Required="true" Mask="false">99</Config>
+  <Config Name="PGID" Target="PGID" Default="100" Mode="" Description="Group ID the container process runs as. Default 100 = users on Unraid." Type="Variable" Display="advanced" Required="true" Mask="false">100</Config>
+
+  <!-- Unraid native per-container Tailscale (matches the Docmost pattern) -->
+  <TailscaleEnabled>true</TailscaleEnabled>
+  <TailscaleIsExitNode>false</TailscaleIsExitNode>
+  <TailscaleHostname>librarian-mcp</TailscaleHostname>
+  <TailscaleExitNodeIP/>
+  <TailscaleSSH>false</TailscaleSSH>
+  <TailscaleUserspaceNetworking>true</TailscaleUserspaceNetworking>
+  <TailscaleLANAccess>false</TailscaleLANAccess>
+  <TailscaleServe>no</TailscaleServe>
+  <TailscaleWebUI/>
+  <TailscaleDParams/>
+  <TailscaleParams>--auth-key=REPLACE_WITH_TAILSCALE_AUTH_KEY --advertise-tags=tag:librarian-mcp</TailscaleParams>
+  <TailscaleRoutes/>
+  <TailscaleAcceptRoutes>false</TailscaleAcceptRoutes>
+  <TailscaleStateDir>/mnt/user/appdata/tailscale/librarian-mcp</TailscaleStateDir>
+
+</Container>
