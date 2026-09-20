@@ -7,10 +7,13 @@
   <MyIP/>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
+  <Deprecated>true</Deprecated>
   <Support>https://forums.unraid.net/topic/198763-support-paperclip-open-source-ai-coding-agent-platform-for-unraid/</Support>
   <Project>https://github.com/paperclipai/paperclip</Project>
   <ReadMe>https://github.com/paperclipai/paperclip/blob/master/README.md</ReadMe>
   <Overview>
+⚠ NO LONGER SUPPORTED — as of 2026-09-20 this template is no longer maintained. The image remains available for existing installs but will not receive updates or support.
+
 Paperclip is an open-source AI coding agent platform. This image is maintained by BitCryptic and built from the official Paperclip source with Unraid compatibility in mind.
 
 Requires a PostgreSQL database (e.g. a separate Postgres container). Set DATABASE_URL to your connection string before starting.

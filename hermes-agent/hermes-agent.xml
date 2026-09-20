@@ -7,9 +7,12 @@
   <MyIP/>
   <Shell>bash</Shell>
   <Privileged>false</Privileged>
+  <Deprecated>true</Deprecated>
   <Support>https://github.com/bitcryptic-gw/hermes-agent/issues</Support>
   <Project>https://github.com/NousResearch/hermes-agent</Project>
   <Overview>
+⚠ NO LONGER SUPPORTED — as of 2026-09-20 this template is no longer maintained. The image remains available for existing installs but will not receive updates or support.
+
 Hermes Agent by Nous Research — self-hosted autonomous AI agent with persistent memory,
 multi-platform gateway (Matrix, Telegram, Discord, Slack, and more), MCP tool support,
 and self-improving skills. This image is the BitCryptic fork with Matrix E2EE fixes.

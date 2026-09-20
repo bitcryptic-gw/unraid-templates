@@ -1,0 +1,42 @@
+name: Lint templates
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      - name: XML well-formedness
+        run: |
+          set -euo pipefail
+          fail=0
+          while IFS= read -r -d '' f; do
+            if ! xmllint --noout "$f"; then
+              echo "::error file=$f::$f is not well-formed XML"
+              fail=1
+            fi
+          done < <(find . -type f -name '*.xml' -not -path './.git/*' -print0)
+          exit $fail
+
+      - name: Forbidden content
+        run: |
+          set -euo pipefail
+          fail=0
+          pattern='pygmy-bramble|myth-nessie|tag:[a-z]|gary-|graham|1password|REPLACE_WITH_TAILSCALE|100\.(6[4-9]|[7-9][0-9]|1[01][0-9]|12[0-7])\.[0-9]{1,3}\.[0-9]{1,3}|(^|[^0-9])(10\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}|192\.168\.[0-9]{1,3}\.[0-9]{1,3}|172\.(1[6-9]|2[0-9]|3[01])\.[0-9]{1,3}\.[0-9]{1,3})'
+          if find . -type f -name '*.xml' -not -path './.git/*' -print0 | xargs -0 grep -niE "$pattern"; then
+            echo "::error::forbidden content found in template XML (tailnet names, ACL tags, personal names, secret placeholders, or private addresses)"
+            fail=1
+          fi
+          # ts.net is only allowed as the exact placeholder your-tailnet.ts.net
+          if find . -type f -name '*.xml' -not -path './.git/*' -print0 | xargs -0 grep -niE 'ts\.net' | sed -E 's/your-tailnet\.ts\.net//g' | grep -qiE 'ts\.net'; then
+            echo "::error::disallowed ts.net string — only the placeholder your-tailnet.ts.net is allowed"
+            fail=1
+          fi
+          exit $fail

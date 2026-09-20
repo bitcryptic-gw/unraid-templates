@@ -12,6 +12,7 @@
   <MyIP></MyIP>
   <Shell>sh</Shell>
   <Privileged>false</Privileged>
+  <Deprecated>true</Deprecated>
 
   <Support>https://forums.unraid.net/topic/197773-support-nanoclaw-lightweight-secure-ai-agent-for-unraid/</Support>
   <Project>https://github.com/qwibitai/nanoclaw</Project>
@@ -20,6 +21,8 @@
   <Icon>https://raw.githubusercontent.com/bitcryptic-gw/unraid-nanoclaw/main/icon.png</Icon>
 
   <Overview>
+⚠ NO LONGER SUPPORTED — as of 2026-09-20 this template is no longer maintained. The image remains available for existing installs but will not receive updates or support.
+
 NanoClaw is a lightweight, secure personal AI agent that runs on your own server.
 It connects to Telegram and/or Matrix (E2EE) and runs every agent session
 inside an isolated Docker container — so the AI only sees what you explicitly give it access to.
@@ -93,7 +96,7 @@ Support: https://forums.unraid.net/topic/197773-support-nanoclaw-lightweight-sec
   <Config Name="Agent Effort" Target="NANOCLAW_AGENT_EFFORT" Default="medium" Mode="" Description="Default reasoning effort for agent containers. Per-group override via settings.json. Valid values: low, medium, high, max." Type="Variable" Display="always" Required="false" Mask="false"/>
   <Config Name="NANOCLAW_EXTRA_MOUNTS" Target="NANOCLAW_EXTRA_MOUNTS" Default="" Mode="" Description="Additional volume mounts passed to agent containers. Format: hostpath:containerpath:ro,hostpath2:containerpath2:rw — e.g. /mnt/cache/logs:/central-logs:ro" Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="NANOCLAW_DOCKER_NETWORK" Target="NANOCLAW_DOCKER_NETWORK" Default="ai-local" Mode="" Description="Docker network for agent containers. Leave blank for default bridge. Set to a custom network name (e.g. ai-local) to isolate agent containers. The NanoClaw container itself must also be on this network." Type="Variable" Display="advanced" Required="false" Mask="false"/>
-  <Config Name="UNRAIDCLAW_SERVERS" Target="UNRAIDCLAW_SERVERS" Default="" Mode="" Description="UnraidClaw server config as JSON array. Example: [{&quot;name&quot;:&quot;unraid-syd&quot;,&quot;url&quot;:&quot;https://unraid-syd:9876&quot;,&quot;apiKey&quot;:&quot;YOUR_KEY&quot;}]. Supports multiple servers." Type="Variable" Display="advanced" Required="false" Mask="false"/>
+  <Config Name="UNRAIDCLAW_SERVERS" Target="UNRAIDCLAW_SERVERS" Default="" Mode="" Description="UnraidClaw server config as JSON array. Example: [{&quot;name&quot;:&quot;your-server&quot;,&quot;url&quot;:&quot;https://your-server:9876&quot;,&quot;apiKey&quot;:&quot;YOUR_KEY&quot;}]. Supports multiple servers." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Tailscale API Client ID" Target="TS_API_CLIENT_ID" Default="" Mode="" Description="OAuth client ID from login.tailscale.com/admin/settings/oauth. Used by the assistant to query the Tailscale API for device discovery, monitoring and ACL auditing." Type="Variable" Display="advanced" Required="false" Mask="false"/>
   <Config Name="Tailscale API Client Secret" Target="TS_API_CLIENT_SECRET" Default="" Mode="" Description="OAuth client secret from login.tailscale.com/admin/settings/oauth. Keep this masked — treated as a credential." Type="Variable" Display="advanced" Required="false" Mask="true"/>
   <Config Name="Tailscale Tailnet" Target="TS_API_TAILNET" Default="your-tailnet.ts.net" Mode="" Description="Your Tailscale tailnet name. Found in the Tailscale admin console." Type="Variable" Display="advanced" Required="false" Mask="false"/>
