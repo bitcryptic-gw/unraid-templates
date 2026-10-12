@@ -6,7 +6,7 @@ https://hub.docker.com/r/bitcryptic/pi-network-node
 </Registry>
 <Beta>false</Beta>
 <Category>Crypto: Network:Other</Category>
-<Date>2026-04-17</Date>
+<Date>2026-10-11</Date>
 <Network>bridge</Network>
 <MyIP/>
 <Shell>sh</Shell>
@@ -23,7 +23,7 @@ https://github.com/bitcryptic-gw/unraid-pi-network-node
 https://raw.githubusercontent.com/bitcryptic-gw/unraid-pi-network-node/main/icon.png
 </Icon>
 <Overview>
-Pi Network Node (Docker) template for Unraid — maintained by BitCryptic. This image wraps the official Pi Network node image with performance tuning applied out of the box, significantly reducing CPU and host load compared to running the upstream image directly. Upstream image: pinetwork/pi-node-docker:organization-mainnet-v1.0-p22.1 Source / changelog: https://github.com/bitcryptic-gw/unraid-pi-network-node Performance optimisations included: - INGEST_DISABLE_STATE_VERIFICATION=true — disables periodic full ledger state scans (main CPU reduction) - PARALLEL_JOB_SIZE=1 — reduces horizon ingestion worker parallelism - HISTORY_RETENTION_COUNT=1000000 — retains ~8 weeks of ledger history instead of all history since genesis Persistent data: - Map a host path to /opt/stellar (required). Ports (Pi standard): - 31401 -> 8000 (Horizon HTTP) - 31402 -> 31402 (stellar-core peer) - 31403 -> 1570 (Local history server / webfsd) Notes: - POSTGRES_PASSWORD is required. - NODE_PRIVATE_KEY is optional (advanced): leave blank for new nodes; set only if migrating an existing node identity. - --mainnet and --enable-auto-migrations are passed as Post Arguments.
+Pi Network Node (Docker) template for Unraid — maintained by BitCryptic. This image wraps the official Pi Network node image with performance tuning applied out of the box, significantly reducing CPU and host load compared to running the upstream image directly. Upstream image: pinetwork/pi-node-docker:organization-mainnet-v1.0-p28.0.1 Source / changelog: https://github.com/bitcryptic-gw/unraid-pi-network-node Performance optimisations included: - INGEST_DISABLE_STATE_VERIFICATION=true — disables periodic full ledger state scans (main CPU reduction) - HISTORY_RETENTION_COUNT=125000 — prunes horizon history to the most recent 125000 ledgers (~7 days at ~5s per ledger) instead of retaining all history since genesis Persistent data: - Map a host path to /opt/stellar (required). Ports (Pi standard): - 31401 -> 8000 (Horizon HTTP) - 31402 -> 31402 (stellar-core peer) - 31403 -> 1570 (Local history server / webfsd) Notes: - POSTGRES_PASSWORD is required. - NODE_PRIVATE_KEY is optional (advanced): leave blank for new nodes; set only if migrating an existing node identity. - --mainnet and --enable-auto-migrations are passed as Post Arguments. - Horizon reads its tuning from horizon.env inside your appdata, which overrides the image defaults; the README explains how to check the effective values.
 </Overview>
 <ExtraParams/>
 <PostArgs>--mainnet --enable-auto-migrations</PostArgs>
